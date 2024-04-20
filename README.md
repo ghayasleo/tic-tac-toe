@@ -14,6 +14,38 @@ We will utilize the following tools and technologies:
 2. **scikit-learn:** For ML algorithms.
 3. **Pygame:** For game development.
 
+## Installation
+
+### Setting up Environment
+
+Use the following command to create the environment:
+
+1. **Macbook**
+
+        python3 -m venv env
+
+2. **Windows**
+
+        python -m venv env
+
+### Activating the Environment
+
+Use the command below to activate the environment
+
+1. **Macbook**
+
+        source env/bin/activate
+
+2. **Windows**
+
+        env\Scripts\activate
+
+### Installing dependencies
+
+Use the command given below to install dependencies
+
+    pip install -r requirements.txt
+
 ## Contributors
 
 This project was contributed by:
