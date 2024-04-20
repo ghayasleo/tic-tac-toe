@@ -7,7 +7,6 @@ screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Tic Tac Toe")
 clock = pygame.time.Clock()
 
-
 running = True
 
 while running:
@@ -20,10 +19,18 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("#121212")
 
-    # RENDER YOUR GAME HERE
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+
+    # Game Code
+
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     # flip() the display to put your work on screen
-    pygame.display.flip()
+    pygame.display.update()
 
     clock.tick(60)  # limits FPS to 60
 
