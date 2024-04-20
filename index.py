@@ -3,7 +3,9 @@ import pygame
 # pygame setup
 pygame.init()
 
-screen = pygame.display.set_mode((1280, 720))
+screen_width, screen_height = 1280, 720
+
+screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Tic Tac Toe")
 clock = pygame.time.Clock()
 
