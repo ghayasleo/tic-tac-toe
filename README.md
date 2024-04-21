@@ -46,9 +46,25 @@ Use the command given below to install dependencies
 
     pip install -r requirements.txt
 
+### Running the code
+
+Use the following command to run the code
+
+1. **Macbook**
+
+        python3 index.py
+
+2. **Windows**
+
+        python index.py
+
 ## Contributors
 
 This project was contributed by:
 
 - [Ghayas Ud Din](https://github.com/ghayasleo)
-- [Afshan Sifat](https://github.com/ghayasleo)
+- [Afshan Sifat](https://github.com/afshansif)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
