@@ -3,25 +3,30 @@ from pygame.locals import *
 from src.constants import *
 
 
-def render_symbol(symbol: int):
+def render_symbol(symbol: int, tile_left: int, tile_top: int):
+    sym: pygame.Surface
     if symbol == PLAYER_O:
-        return 'O'
+        sym = pygame.image.load('src/assets/svg/circle.svg')
     elif symbol == PLAYER_X:
-        return 'X'
+        sym = pygame.image.load('src/assets/svg/cross.svg')
+    if symbol != BLANK:
+        rect = sym.get_rect()
+        rect.center = tile_left + int(TILE_SIZE / 2), tile_top + int(TILE_SIZE / 2)
+        SCREEN.blit(sym, rect)
 
 
 def create_board(board: list[int]):
-    for x in range(3):
-        for y in range(3):
+    for y in range(3):
+        for x in range(3):
             tile = x*3+y
             is_empty = board[tile] == BLANK
             drawTile(x, y, board[tile], is_empty)
 
 
 def drawTile(x: int, y: int, symbol: int, is_empty: bool):
-    tile_x = x * TILE_SIZE
-    tile_y = y * TILE_SIZE
-    tile_left = SCREEN_WIDTH / 2 + tile_x - GRID_SIZE / 2
+    tile_x = y * TILE_SIZE
+    tile_y = x * TILE_SIZE
+    tile_left = (SCREEN_WIDTH / 2 + tile_x - GRID_SIZE / 2)
     tile_top = SCREEN_HEIGHT / 2 + tile_y - GRID_SIZE / 2
 
     rect = pygame.Rect(tile_left, tile_top, TILE_SIZE, TILE_SIZE)
@@ -30,14 +35,20 @@ def drawTile(x: int, y: int, symbol: int, is_empty: bool):
     if hover:
         box = pygame.draw.rect(SCREEN, CLR_HOVER, rect)
 
-    if x != 2:
+    if y != 2:
         line_rect = pygame.Rect(tile_left + TILE_SIZE - 4, tile_top, 4, TILE_SIZE)
         line = pygame.draw.rect(SCREEN, CLR_WHITE, line_rect, border_radius=10)
         box.clip(line)
-    if y != 2:
+    if x != 2:
         line_rect = pygame.Rect(tile_left, tile_top + TILE_SIZE - 4, TILE_SIZE, 4)
         line = pygame.draw.rect(SCREEN, CLR_WHITE, line_rect, border_radius=10)
         box.clip(line)
+
+    render_symbol(symbol, tile_left, tile_top)
+    # textSurf = BASICFONT.render(f"×-○", True, CLR_WHITE)
+    # textRect = textSurf.get_rect()
+    # textRect.center = tile_left + int(TILE_SIZE / 2), tile_top + int(TILE_SIZE / 2)
+    # SCREEN.blit(textSurf, textRect)
 
 
 def main():
@@ -48,7 +59,7 @@ def main():
     SCREEN.fill(CLR_BG)
     CLOCK = pygame.time.Clock()
     pygame.display.set_caption(TITLE)
-    BASICFONT = pygame.font.Font('freesansbold.ttf', SYM_SIZE)
+    BASICFONT = pygame.font.Font('src/assets/font/google-sans.ttf', SYM_SIZE)
     board = [BLANK] * 9
     create_board(board)
     pygame.display.update()
