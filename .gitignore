@@ -3,3 +3,5 @@ env
 src/__pycache__
 
 game.py
+
+src/matches.pickle

@@ -1,6 +1,28 @@
 import pygame
+import math
+import pickle
+import os
 from pygame.locals import *
 from src.constants import *
+
+
+# def addMatch(data):
+#     with open(MATCH_FILE, 'wb') as file:
+#         pickle.dump(data, file)
+
+
+# def getMatches():
+#     if os.path.exists(MATCH_FILE):
+#         with open(MATCH_FILE, 'rb') as file:
+#                 loaded_data = pickle.load(file)
+#                 return loaded_data
+
+
+# def saveMatch(data):
+#     if os.path.exists(MATCH_FILE):
+#         matches = getMatches()
+#         matches.append(data)
+#         addMatch(matches)
 
 
 def render_symbol(symbol: int, tile_left: int, tile_top: int):
@@ -40,6 +62,7 @@ def create_board(board: list[int], notify: str):
 
     score = f"{SCORES[0]} - {SCORES[1]}"
     players = f"{symbol_to_text(PLAYER_X)}       {symbol_to_text(PLAYER_O)}"
+    create_text(TITLE, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) - (GRID_SIZE / 2) - 90, font=FONT_L, color=THEME_CLR)
     create_text(score, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) + (GRID_SIZE / 2) + 65, font=FONT_SM)
     create_text(players, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) + (GRID_SIZE / 2) + 95, font=FONT_XS)
 
@@ -138,14 +161,63 @@ def check_result(board: list[int], player: int):
         return "Game Draw"
 
 
+def divide_chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
+obj = {
+    PLAYER_X: "X",
+    PLAYER_O: "O",
+    CONT: "Continue",
+    DRAW: "Draw"
+}
+
+def minimax(board: list[int], is_maximizing: bool, depth: int):
+    result = game_result(board)
+
+    if result != CONT:
+        if result == DRAW:
+            return 0
+        else:
+            return 1 if result == PLAYER_O else -1
+    if is_maximizing:
+        best_score = -math.inf
+        for i in range(len(board)):
+            if board[i] == BLANK:
+                board[i] = PLAYER_O
+                score = minimax(board, False, depth + 1)
+                board[i] = BLANK
+                best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = math.inf
+        for i in range(len(board)):
+            if board[i] == BLANK:
+                board[i] = PLAYER_X
+                score = minimax(board, True, depth + 1)
+                board[i] = BLANK
+                best_score = min(score, best_score)
+        return best_score
+
+
+def turns(sym, two_players):
+    if two_players:
+        msg = f"{sym}'s Turn"
+    else:
+        msg = "Your Turn"
+    return msg
+
+
 def main():
-    global SCREEN, FONT_BASE, SCORES, FONT_SM, FONT_XS
+    global SCREEN, SCORES, FONT_BASE, FONT_SM, FONT_XS, FONT_L
 
     pygame.init()
     SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     SCREEN.fill(CLR_BG)
     clock = pygame.time.Clock()
     pygame.display.set_caption(TITLE)
+    FONT_L = pygame.font.Font('src/assets/font/sora/Sora-Bold.ttf', L_FONT_SIZE)
     FONT_BASE = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', BASE_FONT_SIZE)
     FONT_SM = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', SM_FONT_SIZE)
     FONT_XS = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', XS_FONT_SIZE)
@@ -153,11 +225,12 @@ def main():
     click_sound = pygame.mixer.Sound("src/assets/audio/click.mp3")
     win_sound = pygame.mixer.Sound("src/assets/audio/win.mp3")
     board = [BLANK] * 9
+    two_players = False
     game_over = False
     turn = PLAYER_X
     SCORES = [0, 0]
     sym = symbol_to_text(turn)
-    msg = f"{sym}'s turn"
+    msg = turns(sym, two_players)
     delay = None
     create_board(board, msg)
     pygame.display.update()
@@ -173,10 +246,32 @@ def main():
         if coords and is_legal_move(coords, board) and not game_over:
             click_sound.play()
             choice = step(*coords)
-            update_board(board, choice, turn)
+            if two_players:
+                update_board(board, choice, turn)
+            else:
+                update_board(board, choice, turn)
             turn = PLAYER_X if turn == PLAYER_O else PLAYER_O
             sym = symbol_to_text(turn)
-            msg = f"{sym}'s Turn"
+            msg = turns(sym, two_players)
+
+            if not two_players:
+                create_board(board, msg)
+                pygame.display.update()
+                bestScore = -math.inf
+                bestMove = None
+                for i in range(len(board)):
+                    if board[i] == BLANK:
+                        board[i] = PLAYER_O
+                        score = minimax(board, False, 0)
+                        board[i] = BLANK
+                        if score > bestScore:
+                            bestScore = score
+                            bestMove = i
+                if not isinstance(bestMove, type(None)):
+                    board[bestMove] = PLAYER_O
+                turn = PLAYER_X if turn == PLAYER_O else PLAYER_O
+                create_board(board, msg)
+                pygame.display.update()
 
             result = game_result(board)
             game_over = result != CONT
@@ -188,12 +283,13 @@ def main():
                 delay = current_time + 1000
             elif result == DRAW:
                 msg = "Game Draw"
+                delay = current_time + 1000
         if delay and delay < current_time:
             board = [BLANK] * 9
-            msg = f"{sym}'s turn"
+            msg = turns(sym, two_players)
             game_over = False
             delay = None
 
         create_board(board, msg)
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(100)
