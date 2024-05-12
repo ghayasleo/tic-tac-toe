@@ -217,6 +217,8 @@ def main():
     SCREEN.fill(CLR_BG)
     clock = pygame.time.Clock()
     pygame.display.set_caption(TITLE)
+    pygame_icon = pygame.image.load('src/assets/img/favicon.png')
+    pygame.display.set_icon(pygame_icon)
     FONT_L = pygame.font.Font('src/assets/font/sora/Sora-Bold.ttf', L_FONT_SIZE)
     FONT_BASE = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', BASE_FONT_SIZE)
     FONT_SM = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', SM_FONT_SIZE)
@@ -224,6 +226,7 @@ def main():
     pygame.mixer.init()
     click_sound = pygame.mixer.Sound("src/assets/audio/click.mp3")
     win_sound = pygame.mixer.Sound("src/assets/audio/win.mp3")
+    draw_sound = pygame.mixer.Sound("src/assets/audio/draw.mp3")
     board = [BLANK] * 9
     two_players = False
     game_over = False
@@ -282,6 +285,7 @@ def main():
                 SCORES[player - 1] += 1
                 delay = current_time + 1000
             elif result == DRAW:
+                draw_sound.play()
                 msg = "Game Draw"
                 delay = current_time + 1000
         if delay and delay < current_time:
