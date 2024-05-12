@@ -5,42 +5,23 @@ import os
 from pygame.locals import *
 from src.constants import *
 
-
-# def addMatch(data):
-#     with open(MATCH_FILE, 'wb') as file:
-#         pickle.dump(data, file)
-
-
-# def getMatches():
-#     if os.path.exists(MATCH_FILE):
-#         with open(MATCH_FILE, 'rb') as file:
-#                 loaded_data = pickle.load(file)
-#                 return loaded_data
-
-
-# def saveMatch(data):
-#     if os.path.exists(MATCH_FILE):
-#         matches = getMatches()
-#         matches.append(data)
-#         addMatch(matches)
-
-
+# Renders a symbol (X or O) on a tile at the given coordinates
 def render_symbol(symbol: int, tile_left: int, tile_top: int):
     sym: pygame.Surface
     if symbol == PLAYER_O:
         sym = pygame.image.load('src/assets/svg/circle.svg')
     elif symbol == PLAYER_X:
         sym = pygame.image.load('src/assets/svg/cross.svg')
-    if symbol != BLANK:
+    if symbol!= BLANK:
         rect = sym.get_rect()
         rect.center = tile_left + int(TILE_SIZE / 2), tile_top + int(TILE_SIZE / 2)
         SCREEN.blit(sym, rect)
 
-
+# Converts x and y coordinates to a tile index
 def step(x: int, y: int):
     return x * 3 + y
 
-
+# Creates text at the given coordinates with optional font and color parameters
 def create_text(text: str, left: int, top: int, font = None, color = CLR_WHITE):
     if not font:
         font = FONT_BASE
@@ -50,14 +31,14 @@ def create_text(text: str, left: int, top: int, font = None, color = CLR_WHITE):
     SCREEN.blit(textSurf, textRect)
     return textRect
 
-
+# Creates the game board with a notification message
 def create_board(board: list[int], notify: str):
     SCREEN.fill(CLR_BG)
 
     for y in range(3):
         for x in range(3):
             tile = step(x, y)
-            drawTile(x, y, board[tile])
+            draw_tile(x, y, board[tile])
     create_text(notify, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) + (GRID_SIZE / 2) + 10)
 
     score = f"{SCORES[0]} - {SCORES[1]}"
@@ -66,11 +47,11 @@ def create_board(board: list[int], notify: str):
     create_text(score, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) + (GRID_SIZE / 2) + 65, font=FONT_SM)
     create_text(players, SCREEN_WIDTH / 2, (SCREEN_HEIGHT / 2) + (GRID_SIZE / 2) + 95, font=FONT_XS)
 
-
+# Updates the game board with a new move
 def update_board(board: list[int], choice: int, player: int):
     board[choice] = player
 
-
+# Converts a symbol (X or O) to a string
 def symbol_to_text(symbol: int):
     if symbol == PLAYER_O:
         return "O"
@@ -78,7 +59,7 @@ def symbol_to_text(symbol: int):
         return "X"
     return ""
 
-
+# Gets the top-left coordinates of a tile
 def get_top_left_of_tile(x: int, y: int):
     tile_x = y * TILE_SIZE
     tile_y = x * TILE_SIZE
@@ -86,8 +67,8 @@ def get_top_left_of_tile(x: int, y: int):
     tile_top = SCREEN_HEIGHT / 2 + tile_y - GRID_SIZE / 2
     return (tile_top, tile_left)
 
-
-def drawTile(x: int, y: int, symbol: int):
+# Draws a tile at the given coordinates with the given symbol
+def draw_tile(x: int, y: int, symbol: int):
     tile_top, tile_left = get_top_left_of_tile(x, y)
 
     rect = pygame.Rect(tile_left, tile_top, TILE_SIZE, TILE_SIZE)
@@ -96,25 +77,25 @@ def drawTile(x: int, y: int, symbol: int):
     if hover:
         box = pygame.draw.rect(SCREEN, CLR_HOVER, rect)
 
-    if y != 2:
+    if y!= 2:
         line_rect = pygame.Rect(tile_left + TILE_SIZE - 4, tile_top, 4, TILE_SIZE)
         line = pygame.draw.rect(SCREEN, CLR_WHITE, line_rect, border_radius=10)
         box.clip(line)
-    if x != 2:
+    if x!= 2:
         line_rect = pygame.Rect(tile_left, tile_top + TILE_SIZE - 4, TILE_SIZE, 4)
         line = pygame.draw.rect(SCREEN, CLR_WHITE, line_rect, border_radius=10)
         box.clip(line)
 
     render_symbol(symbol, tile_left, tile_top)
 
-
+# Checks if a move is legal
 def is_legal_move(coords: tuple[int, int], board: list[int]):
     tile = step(*coords)
-    if board[tile] != BLANK:
+    if board[tile]!= BLANK:
         return False
     return True
 
-
+# Gets the spot clicked
 def get_clicked_spot(x_axis: int, y_axis: int):
     for y in range(3):
         for x in range(3):
@@ -124,7 +105,7 @@ def get_clicked_spot(x_axis: int, y_axis: int):
                 return (x, y)
     return None
 
-
+# Defines if the game is Continued, Draw or a player won
 def game_result(board: list[int]):
     def check_horizontal(player: int):
         for i in [0, 3, 6]:
@@ -151,28 +132,7 @@ def game_result(board: list[int]):
     is_draw = BLANK not in board
     return DRAW if is_draw else CONT
 
-
-def check_result(board: list[int], player: int):
-    result = game_result(board)
-
-    if result == player:
-        return f"{symbol_to_text(player)} wins!"
-    elif result == DRAW:
-        return "Game Draw"
-
-
-def divide_chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-
-obj = {
-    PLAYER_X: "X",
-    PLAYER_O: "O",
-    CONT: "Continue",
-    DRAW: "Draw"
-}
-
+# Algorithm for bot movement
 def minimax(board: list[int], is_maximizing: bool, depth: int):
     result = game_result(board)
 
@@ -200,7 +160,7 @@ def minimax(board: list[int], is_maximizing: bool, depth: int):
                 best_score = min(score, best_score)
         return best_score
 
-
+# Returns a message with the player turn based on the argument
 def turns(sym, two_players):
     if two_players:
         msg = f"{sym}'s Turn"
@@ -242,11 +202,11 @@ def main():
         coords = None
         current_time = pygame.time.get_ticks()
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT: # Check if the program is quit
                 return
-            if event.type == MOUSEBUTTONUP:
+            if event.type == MOUSEBUTTONUP: # Checked if mouse button is clicked
                 coords = get_clicked_spot(event.pos[0], event.pos[1])
-        if coords and is_legal_move(coords, board) and not game_over:
+        if coords and is_legal_move(coords, board) and not game_over: # Continue if clicked on tile, move is legal and game is not over
             click_sound.play()
             choice = step(*coords)
             if two_players:
@@ -257,7 +217,7 @@ def main():
             sym = symbol_to_text(turn)
             msg = turns(sym, two_players)
 
-            if not two_players:
+            if not two_players: # Defining bot's move
                 create_board(board, msg)
                 pygame.display.update()
                 bestScore = -math.inf
@@ -278,17 +238,17 @@ def main():
 
             result = game_result(board)
             game_over = result != CONT
-            if result == PLAYER_X or result == PLAYER_O:
+            if result == PLAYER_X or result == PLAYER_O: # if player has won
                 win_sound.play()
                 player = PLAYER_X if turn == PLAYER_O else PLAYER_O
                 msg = f"{symbol_to_text(player)} wins!"
                 SCORES[player - 1] += 1
                 delay = current_time + 1000
-            elif result == DRAW:
+            elif result == DRAW: # if the game is draw
                 draw_sound.play()
                 msg = "Game Draw"
                 delay = current_time + 1000
-        if delay and delay < current_time:
+        if delay and delay < current_time: # Restart game after 1 second
             board = [BLANK] * 9
             msg = turns(sym, two_players)
             game_over = False
