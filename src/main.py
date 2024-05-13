@@ -1,7 +1,5 @@
 import pygame
 import math
-import pickle
-import os
 from pygame.locals import *
 from src.constants import *
 
