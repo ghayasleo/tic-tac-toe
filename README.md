@@ -58,12 +58,6 @@ Use the following command to run the code
 
         python index.py
 
-### Building the project
-
-Use the following command to create an index.exe file in the `dist` folder in root directory
-
-        pyinstaller index.py --onefile --windowed
-
 ## Contributors
 
 This project was contributed by:
