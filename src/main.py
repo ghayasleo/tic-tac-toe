@@ -19,6 +19,26 @@ def render_symbol(symbol: int, tile_left: int, tile_top: int):
 def step(x: int, y: int):
     return x * 3 + y
 
+# Creates button
+def create_button(idx: int, url: str):
+    size = 40
+    left = size * idx + abs((idx - 1) * 20)
+    top = SCREEN_HEIGHT - 40 - size
+    rect = pygame.Rect(left, top, size, size)
+    box = pygame.draw.rect(SCREEN, CLR_HOVER, rect, border_radius=5)
+    pygame.draw.rect(SCREEN, CLR_BTN_BORDER, rect, 1, border_radius=5)
+    icon = pygame.image.load(url)
+    icon_rect = icon.get_rect()
+    icon_rect.center = left + size / 2, top + size / 2
+    SCREEN.blit(icon, icon_rect)
+    return box
+
+# Checks if the button is clicked
+def trigger_click(box: pygame.Rect, is_clicked: bool, two_players: bool):
+    if is_clicked and box.collidepoint(pygame.mouse.get_pos()):
+        return False if two_players == True else True
+    return two_players
+
 # Creates text at the given coordinates with optional font and color parameters
 def create_text(text: str, left: int, top: int, font = None, color = CLR_WHITE):
     if not font:
@@ -181,12 +201,12 @@ def main():
     FONT_BASE = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', BASE_FONT_SIZE)
     FONT_SM = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', SM_FONT_SIZE)
     FONT_XS = pygame.font.Font('src/assets/font/sora/Sora-Regular.ttf', XS_FONT_SIZE)
+    two_players = False
     pygame.mixer.init()
     click_sound = pygame.mixer.Sound("src/assets/audio/click.mp3")
     win_sound = pygame.mixer.Sound("src/assets/audio/win.mp3")
     draw_sound = pygame.mixer.Sound("src/assets/audio/draw.mp3")
     board = [BLANK] * 9
-    two_players = False
     game_over = False
     turn = PLAYER_X
     SCORES = [0, 0]
@@ -194,16 +214,20 @@ def main():
     msg = turns(sym, two_players)
     delay = None
     create_board(board, msg)
+    button_toggle = create_button(1, "src/assets/svg/user.svg")
+    is_btn_clicked = False
     pygame.display.update()
 
     while True:
         coords = None
         current_time = pygame.time.get_ticks()
+        is_btn_clicked = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # Check if the program is quit
                 return
             if event.type == MOUSEBUTTONUP: # Checked if mouse button is clicked
                 coords = get_clicked_spot(event.pos[0], event.pos[1])
+                is_btn_clicked = True
         if coords and is_legal_move(coords, board) and not game_over: # Continue if clicked on tile, move is legal and game is not over
             click_sound.play()
             choice = step(*coords)
@@ -253,5 +277,16 @@ def main():
             delay = None
 
         create_board(board, msg)
+        old_two_player = two_players
+        two_players = trigger_click(button_toggle, is_btn_clicked, two_players)
+        if two_players != old_two_player:
+            board = [BLANK] * 9
+            SCORES = [0, 0]
+            turn = PLAYER_X
+            msg = turns(sym, two_players)
+        if two_players:
+            button_toggle = create_button(1, "src/assets/svg/users.svg")
+        else:
+            button_toggle = create_button(1, "src/assets/svg/user.svg")
         pygame.display.update()
         clock.tick(100)

@@ -21,6 +21,7 @@ CONT = 10
 # colors
 CLR_BLACK = "#000000"
 CLR_WHITE = "#ffffff"
+CLR_BTN_BORDER = "#7c7c7c"
 CLR_BG = "#121212"
 CLR_HOVER = "#1d1d1d"
 CLR_BORDER = "#ffffff4d"
