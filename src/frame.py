@@ -26,16 +26,12 @@ class Frame:
             for x in range(3):
                 tile = Board.step(x, y)
                 self.draw_tile(x, y, board[tile])
-        self.write_text(text, self.screen_width / 2,
-                        (self.screen_height / 2) + (Board.grid_size / 2) + 10)
+        self.write_text(text, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 10)
         score = f"{scores[0]} - {scores[1]}"
         players = f"{Player.X.name}       {Player.O.name}"
-        self.write_text(TITLE, self.screen_width / 2, (self.screen_height / 2) -
-                        (Board.grid_size / 2) - 90, font=Font.large, color=Color.theme)
-        self.write_text(score, self.screen_width / 2, (self.screen_height /
-                        2) + (Board.grid_size / 2) + 65, font=Font.small)
-        self.write_text(players, self.screen_width / 2, (self.screen_height /
-                        2) + (Board.grid_size / 2) + 95, font=Font.xsmall)
+        self.write_text(TITLE, self.screen_width / 2, (self.screen_height / 2) - (Board.grid_size / 2) - 90, font=Font.large, color=Color.theme)
+        self.write_text(score, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 65, font=Font.small)
+        self.write_text(players, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 95, font=Font.xsmall)
 
     def draw_tile(self, x: int, y: int, symbol: int):
         tile_top, tile_left = self.get_top_left_of_tile(x, y)
@@ -100,10 +96,12 @@ class Frame:
                     return (x, y)
         return None
 
-    def create_button(self, idx: int, url: str):
+    def create_button(self, idx: int, url: str, left=None, top=None):
         size = 40
-        left = size * idx + abs((idx - 1) * 20)
-        top = self.screen_height - 40 - size
+        if not left:
+            left = size * idx + abs((idx - 1) * 20)
+        if not top:
+            top = self.screen_height - 40 - size
         rect = pygame.Rect(left, top, size, size)
         box = pygame.draw.rect(self.screen, Color.hover, rect, border_radius=5)
         pygame.draw.rect(self.screen, Color.btn_border,
