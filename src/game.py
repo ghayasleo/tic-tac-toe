@@ -19,15 +19,19 @@ class Game:
         self.frame = Frame()
         self.board = Board()
         self.player = Player.X
-        self.two_players = True
+        self.two_players = False
+        self.players = ["", "Bot"]
+        self.outcome = 'draw'
+        self.winner = ''
         self.game_over = False
         self.scores = [0, 0]
         self.delay = None
         self.is_btn_clicked = False
         self.show_board = False
         txt = self.player.turns
-        # self.frame.draw_board(self.board.grid, txt, self.scores)
+        # self.frame.draw_board(self.board.grid, txt, self.scores, self.players)
         self.button_toggle = self.frame.create_button(idx=1, url="src/assets/svg/user.svg")
+        self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
 
         self.input_rendered = False
         self.add_inputs()
@@ -60,7 +64,7 @@ class Game:
         if self.two_players:
             self.input_one = Input(left_one, top, input_width, input_height, placeholder="Player one")
             self.input_two = Input(left_two, top, input_width, input_height, placeholder="Player two")
-            self.input_boxes = [self.input_two, self.input_one]
+            self.input_boxes = [self.input_one, self.input_two]
         else:
             self.input_one = Input(left, top, input_width, input_height, placeholder="Your Name")
             self.input_boxes = [self.input_one]
@@ -70,6 +74,7 @@ class Game:
         for box in self.input_boxes:
             box.update()
         self.frame.screen.fill(Color.bg)
+        self.frame.write_title()
         for box in self.input_boxes:
             box.draw(self.frame.screen)
 
@@ -78,7 +83,19 @@ class Game:
         top = (self.frame.screen_height / 2) - (input_height / 2)
         self.login = self.frame.create_button(idx=2, url="src/assets/svg/login.svg",top=top + input_height + 20, left=btn_left)
         if self.is_btn_clicked and self.login.collidepoint(pygame.mouse.get_pos()):
-            self.show_board = True
+            is_empty = False
+            for idx, input in enumerate(self.input_boxes):
+                if input.text == "":
+                    is_empty = True
+                else:
+                    self.players[idx] = input.text
+            if len(self.input_boxes) == 1:
+                self.players[1] = "Bot"
+            if not is_empty:
+                self.show_board = True
+                self.first_move = self.players[0]
+            for i in self.players:
+                    print(f"Player: {i}")
 
     def board_screen(self):
         if self.coords and self.board.is_legal_move(self.coords, self.board.grid) and not self.game_over:
@@ -91,8 +108,7 @@ class Game:
             self.player = self.player.other
 
             if not self.two_players:
-                self.frame.draw_board(
-                    self.board.grid, self.player.turns, self.scores)
+                self.frame.draw_board(self.board.grid, self.player.turns, self.scores, self.players)
                 pygame.display.update()
                 best_score = -math.inf
                 best_move = None
@@ -107,29 +123,36 @@ class Game:
                 if not isinstance(best_move, type(None)):
                     self.board.grid[best_move] = Player.O.value
                 self.player = self.player.other
-                self.frame.draw_board(self.board.grid, self.player.turns, self.scores)
+                self.frame.draw_board(self.board.grid, self.player.turns, self.scores, self.players)
                 pygame.display.update()
 
             result = self.game_result(self.board.grid)
             self.game_over = result != self.cont
             if result == Player.X.value or result == Player.O.value:
-                Sound.win_sound.play()
                 self.player = self.player.other
+                Sound.win_sound.play()
+                self.winner = self.players[result - 1]
+                self.outcome = 'win'
                 self.scores[self.player.value - 1] += 1
                 self.txt = self.player.winning
                 if not self.two_players:
                     self.player = self.player.X
+                self.update_csv()
+                self.player = self.player.other
+                self.first_move = self.players[self.player.value - 1]
                 self.delay = self.current_time + 1000
             elif result == self.draw:  # if the game is draw
                 Sound.draw_sound.play()
+                self.winner = ''
                 self.txt = "Game Draw"
+                self.update_csv()
                 self.delay = self.current_time + 1000
         if self.delay and self.delay < self.current_time:  # Restart game after 1 second
             self.board.grid = [self.board.blank] * 9
             self.txt = self.player.turns
             self.game_over = False
             self.delay = None
-        self.frame.draw_board(self.board.grid, self.player.turns, self.scores)
+        self.frame.draw_board(self.board.grid, self.player.turns, self.scores, self.players)
 
     def events(self):
         self.coords = None
@@ -159,6 +182,15 @@ class Game:
             self.button_toggle = self.frame.create_button(1, "src/assets/svg/users.svg")
         else:
             self.button_toggle = self.frame.create_button(1, "src/assets/svg/user.svg")
+        if self.show_board:
+            self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+
+    def update_csv(self):
+        row = f"{self.players[0]},{self.players[1]},{self.first_move},{self.outcome},{self.winner}\n"
+        print("player_one,player_two,first_move,outcome,winner")
+        print(row)
+        with open('src/assets/dataset.csv','a') as fd:
+            fd.write(row)
 
     def game_result(self, board: list[int]):
         def check_horizontal(player: int):

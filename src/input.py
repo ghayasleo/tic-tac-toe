@@ -26,8 +26,9 @@ class Input:
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    print(self.text)
-                    self.text = ''
+                    # print(self.text)
+                    # self.text = ''
+                    pass
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
@@ -37,13 +38,13 @@ class Input:
 
     def update(self):
         # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
+        width = max(200, self.txt_surface.get_width()+30)
         self.rect.w = width
 
     def draw(self, screen):
         # Blit the text.
         self.placeholder_surface = Font.base.render(self.placeholder, True, self.color)
         screen.blit(self.placeholder_surface, (self.rect.x, self.rect.y-self.rect.height))
-        screen.blit(self.txt_surface, (self.rect.x+10, self.rect.y+6))
+        screen.blit(self.txt_surface, (self.rect.x+15, self.rect.y+10))
         # Blit the rect.
         pygame.draw.rect(screen, self.color, self.rect, 2)

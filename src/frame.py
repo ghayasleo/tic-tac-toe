@@ -4,23 +4,23 @@ from src.board import Board
 from src.font import Font
 from src.color import Color
 from src.player import Player
-from src.constants import *
 
 
 class Frame:
     screen_width = 1280
     screen_height = 720
+    title = "Triad Clash"
 
     def __init__(self) -> None:
         pygame.init()
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height))
         self.screen.fill(Color.bg)
-        pygame.display.set_caption(TITLE)
+        pygame.display.set_caption(self.title)
         pygame_icon = pygame.image.load('src/assets/img/favicon.png')
         pygame.display.set_icon(pygame_icon)
 
-    def draw_board(self, board: list[int], text: str, scores: list[int]):
+    def draw_board(self, board: list[int], text: str, scores: list[int], players: list[str]):
         self.screen.fill(Color.bg)
         for y in range(3):
             for x in range(3):
@@ -28,10 +28,16 @@ class Frame:
                 self.draw_tile(x, y, board[tile])
         self.write_text(text, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 10)
         score = f"{scores[0]} - {scores[1]}"
-        players = f"{Player.X.name}       {Player.O.name}"
-        self.write_text(TITLE, self.screen_width / 2, (self.screen_height / 2) - (Board.grid_size / 2) - 90, font=Font.large, color=Color.theme)
+        player_one = f"{players[0]} ({Player.X.name})"
+        player_two = f"({Player.O.name}) {players[1]}"
+        players = f"{player_one}       {player_two}"
+        self.write_title()
         self.write_text(score, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 65, font=Font.small)
-        self.write_text(players, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 95, font=Font.xsmall)
+        self.write_text(player_one, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 95, font=Font.xsmall,type="left")
+        self.write_text(player_two, self.screen_width / 2, (self.screen_height / 2) + (Board.grid_size / 2) + 95, font=Font.xsmall,type="right")
+
+    def write_title(self):
+        self.write_text(self.title, self.screen_width / 2, (self.screen_height / 2) - (Board.grid_size / 2) - 90, font=Font.large, color=Color.theme)
 
     def draw_tile(self, x: int, y: int, symbol: int):
         tile_top, tile_left = self.get_top_left_of_tile(x, y)
@@ -77,12 +83,18 @@ class Frame:
                 int(Board.tile_size / 2), tile_top + int(Board.tile_size / 2)
             self.screen.blit(sym, rect)
 
-    def write_text(self, text: str, left: int, top: int, font=None, color=Color.white):
+    def write_text(self, text: str, left: int, top: int, font=None, color=Color.white, type="center"):
         if not font:
             font = Font.base
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.center = left, top + text_rect.height / 2
+        text_rect.top = top + text_rect.height / 2
+        if type == "center":
+            text_rect.center = left, text_rect.top
+        elif type == "left":
+            text_rect.left = left - text_surface.get_width() - 10
+        else:
+            text_rect.left = left + 10
         self.screen.blit(text_surface, text_rect)
         return text_rect
 
