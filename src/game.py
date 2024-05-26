@@ -20,11 +20,17 @@ class Game:
         self.board = Board()
         self.player = Player.X
         self.two_players = False
-        self.players = ["", "Bot"]
+        self.players = ["", "Bot - Normal"]
         self.outcome = 'draw'
         self.winner = ''
         self.game_over = False
         self.scores = [0, 0]
+        self.dificulty_levels = {
+            "normal": 4,
+            "hard": 6,
+            "impossible": 7,
+        }
+        self.bot_difficulty = self.dificulty_levels.get("normal")
         self.delay = None
         self.is_btn_clicked = False
         self.show_board = False
@@ -32,6 +38,7 @@ class Game:
         # self.frame.draw_board(self.board.grid, txt, self.scores, self.players)
         self.button_toggle = self.frame.create_button(idx=1, url="src/assets/svg/user.svg")
         self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+        self.difficulty_toggle = self.frame.create_button(idx=3, url="src/assets/svg/normal.svg")
 
         self.input_rendered = False
         self.add_inputs()
@@ -90,12 +97,10 @@ class Game:
                 else:
                     self.players[idx] = input.text
             if len(self.input_boxes) == 1:
-                self.players[1] = "Bot"
+                self.players[1] = "Bot - Normal"
             if not is_empty:
                 self.show_board = True
                 self.first_move = self.players[0]
-            for i in self.players:
-                    print(f"Player: {i}")
 
     def board_screen(self):
         if self.coords and self.board.is_legal_move(self.coords, self.board.grid) and not self.game_over:
@@ -115,7 +120,7 @@ class Game:
                 for i in range(len(self.board.grid)):
                     if self.board.grid[i] == self.board.blank:
                         self.board.grid[i] = Player.O.value
-                        score = self.minimax(self.board.grid, False, 0)
+                        score = self.minimax(self.board.grid, False, 0, self.bot_difficulty, -math.inf, math.inf)
                         self.board.grid[i] = self.board.blank
                         if score > best_score:
                             best_score = score
@@ -138,7 +143,8 @@ class Game:
                 if not self.two_players:
                     self.player = self.player.X
                 self.update_csv()
-                self.player = self.player.other
+                if self.two_players:
+                    self.player = self.player.other
                 self.first_move = self.players[self.player.value - 1]
                 self.delay = self.current_time + 1000
             elif result == self.draw:  # if the game is draw
@@ -167,6 +173,20 @@ class Game:
                 self.is_btn_clicked = True
             for box in self.input_boxes:
                 box.handle_event(event)
+        if self.show_board and not self.two_players:
+            if self.is_btn_clicked and self.difficulty_toggle.collidepoint(pygame.mouse.get_pos()):
+                if self.bot_difficulty == self.dificulty_levels.get("normal"):
+                    self.bot_difficulty = self.dificulty_levels.get("hard")
+                    self.players[1] = "Bot - Hard"
+                elif self.bot_difficulty == self.dificulty_levels.get("hard"):
+                    self.bot_difficulty = self.dificulty_levels.get("impossible")
+                    self.players[1] = "Bot - Impossible"
+                elif self.bot_difficulty == self.dificulty_levels.get("impossible"):
+                    self.bot_difficulty = self.dificulty_levels.get("normal")
+                    self.players[1] = "Bot - Normal"
+                self.board.grid = [self.board.blank] * 9
+                self.scores = [0, 0]
+                self.player = Player.X
 
     def bottom_menu(self):
         old_two_player = self.two_players
@@ -184,11 +204,24 @@ class Game:
             self.button_toggle = self.frame.create_button(1, "src/assets/svg/user.svg")
         if self.show_board:
             self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+            if not self.two_players:
+                key_list = list(self.dificulty_levels.keys())
+                val_list = list(self.dificulty_levels.values())
+                position = val_list.index(self.bot_difficulty)
+                self.difficulty_toggle = self.frame.create_button(idx=3, url=f"src/assets/svg/{key_list[position]}.svg")
 
     def update_csv(self):
-        row = f"{self.players[0]},{self.players[1]},{self.first_move},{self.outcome},{self.winner}\n"
-        print("player_one,player_two,first_move,outcome,winner")
-        print(row)
+        player_two = self.players[1] if "-" not in self.players[1] else "Bot"
+        winner = self.winner if "-" not in self.winner else "Bot"
+        row = f"{self.players[0]},{player_two},{self.first_move},{self.outcome},{winner}"
+        key_list = list(self.dificulty_levels.keys())
+        val_list = list(self.dificulty_levels.values())
+        position = val_list.index(self.bot_difficulty)
+        difficulty = key_list[position]
+        if not self.two_players:
+            row += f",{difficulty}\n"
+        else:
+            row += ",-\n"
         with open('src/assets/dataset.csv','a') as fd:
             fd.write(row)
 
@@ -218,10 +251,10 @@ class Game:
         is_draw = self.board.blank not in board
         return self.draw if is_draw else self.cont
 
-    def minimax(self, board: list[int], is_maximizing: bool, depth: int):
+    def minimax(self, board: list[int], is_maximizing: bool, depth: int, max_depth: int, alpha: float, beta: float):
         result = self.game_result(board)
 
-        if result != self.cont:
+        if result!= self.cont or depth == max_depth:
             if result == self.draw:
                 return 0
             else:
@@ -231,16 +264,22 @@ class Game:
             for i in range(len(board)):
                 if board[i] == self.board.blank:
                     board[i] = self.player.O.value
-                    score = self.minimax(board, False, depth + 1)
+                    score = self.minimax(board, False, depth + 1, max_depth, alpha, beta)
                     board[i] = self.board.blank
                     best_score = max(score, best_score)
+                    alpha = max(alpha, best_score)
+                    if beta <= alpha or depth == max_depth:
+                        break
             return best_score
         else:
             best_score = math.inf
             for i in range(len(board)):
                 if board[i] == self.board.blank:
                     board[i] = self.player.X.value
-                    score = self.minimax(board, True, depth + 1)
+                    score = self.minimax(board, True, depth + 1, max_depth, alpha, beta)
                     board[i] = self.board.blank
                     best_score = min(score, best_score)
+                    beta = min(beta, best_score)
+                    if beta <= alpha or depth == max_depth:
+                        break
             return best_score
