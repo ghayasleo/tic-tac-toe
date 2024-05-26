@@ -134,6 +134,7 @@ class Game:
             result = self.game_result(self.board.grid)
             self.game_over = result != self.cont
             if result == Player.X.value or result == Player.O.value:
+                print("WONN")
                 self.player = self.player.other
                 Sound.win_sound.play()
                 self.winner = self.players[result - 1]
@@ -150,6 +151,7 @@ class Game:
             elif result == self.draw:  # if the game is draw
                 Sound.draw_sound.play()
                 self.winner = ''
+                self.outcome = 'draw'
                 self.txt = "Game Draw"
                 self.update_csv()
                 self.delay = self.current_time + 1000
@@ -213,6 +215,7 @@ class Game:
     def update_csv(self):
         player_two = self.players[1] if "-" not in self.players[1] else "Bot"
         winner = self.winner if "-" not in self.winner else "Bot"
+        winner = winner if self.outcome == 'win' else '-'
         row = f"{self.players[0]},{player_two},{self.first_move},{self.outcome},{winner}"
         key_list = list(self.dificulty_levels.keys())
         val_list = list(self.dificulty_levels.values())

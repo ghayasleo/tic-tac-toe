@@ -1,2 +1,13 @@
 player_one,player_two,first_move,outcome,winner
 Ghayas,Bot,Ghayas,win,Bot
+Ghayas,Bot,Ghayas,win,Ghayas,hard
+Ghayas,Bot,Ghayas,win,Bot,hard
+Ghayas,Bot,Ghayas,draw,,hard
+Ghayas,Bot,Ghayas,draw,,hard
+Ghayas,Bot,Ghayas,win,Bot,hard
+Ghayas,Bot,Ghayas,draw,,hard
+Ghayas,Bot,Ghayas,draw,,hard
+Ghayas,Bot,Ghayas,draw,-,hard
+Ghayas,Afshan,Ghayas,win,Ghayas,-
+Ghayas,Afshan,Afshan,win,Afshan,-
+Ghayas,Afshan,Ghayas,win,Afshan,-
