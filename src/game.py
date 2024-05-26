@@ -134,7 +134,6 @@ class Game:
             result = self.game_result(self.board.grid)
             self.game_over = result != self.cont
             if result == Player.X.value or result == Player.O.value:
-                print("WONN")
                 self.player = self.player.other
                 Sound.win_sound.play()
                 self.winner = self.players[result - 1]
