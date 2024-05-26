@@ -1,4 +1,4 @@
-player_one,player_two,first_move,outcome,winner
+player_one,player_two,first_move,outcome,winner,difficulty
 Ghayas,Bot,Ghayas,win,Bot
 Ghayas,Bot,Ghayas,win,Ghayas,hard
 Ghayas,Bot,Ghayas,win,Bot,hard
