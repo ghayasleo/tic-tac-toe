@@ -1,15 +1,15 @@
+import time
 import math
 import pygame
-import matplotlib.pyplot as plt
-import matplotlib.backends.backend_agg as agg
 from pygame.locals import *
 
 from src.frame import Frame
 from src.player import Player
-from src.color import Color
 from src.board import Board
 from src.sound import Sound
 from src.input import Input
+from src.color import Color
+from src.visualize import Figure
 
 
 class Game:
@@ -28,20 +28,23 @@ class Game:
         self.game_over = False
         self.scores = [0, 0]
         self.dificulty_levels = {
-            "normal": 4,
-            "hard": 6,
-            "impossible": 7,
+            "Normal": 4,
+            "Hard": 6,
+            "Expert": 7,
         }
-        self.bot_difficulty = self.dificulty_levels.get("normal")
+        self.bot_difficulty = self.dificulty_levels.get("Normal")
         self.delay = None
         self.is_btn_clicked = False
-        self.show_board = False
+        self.display = "name"
+        self.show_stats = False
         txt = self.player.turns
         # self.frame.draw_board(self.board.grid, txt, self.scores, self.players)
         self.button_toggle = self.frame.create_button(idx=1, url="src/assets/svg/user.svg")
         self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
-        self.difficulty_toggle = self.frame.create_button(idx=3, url="src/assets/svg/normal.svg")
-
+        self.difficulty_toggle = self.frame.create_button(idx=3, url="src/assets/svg/Normal.svg")
+        self.dataset = "src/assets/dataset.csv"
+        self.img_url = "./src/assets/img/plot.png"
+        self.figure = Figure(self.dataset, self.img_url)
         self.input_rendered = False
         self.add_inputs()
 
@@ -51,29 +54,23 @@ class Game:
         self.flag = True
         while self.flag:
             self.events()
-            if not self.show_board:
+            if self.display == "name":
                 self.name_screen()
-            else:
+            elif self.display == "board":
                 self.board_screen()
+            elif self.display == "graph":
+                self.graph_screen()
             self.bottom_menu()
             pygame.display.update()
             self.clock.tick(100)
         return
 
-    def show_graph(self):
-        # Create a matplotlib figure
-        fig, ax = plt.subplots()
-        # Plot some data
-        ax.plot([1, 2, 3, 4], [1, 4, 9, 16])
-        # Create a figure canvas
-        canvas = agg.FigureCanvasAgg(fig)
-        # Draw the canvas onto a pygame surface
-        renderer = canvas.get_renderer()
-        raw_data = renderer.tostring_rgb()
-        size = canvas.get_width_height()
-        surf = pygame.image.fromstring(raw_data, size, "RGB")
-        # Draw the surface onto the pygame screen
-        self.frame.screen.blit(surf, (0, 0))
+    def graph_screen(self):
+        self.frame.screen.fill(Color.bg)
+        image = pygame.image.load(self.img_url)
+        left = self.frame.screen_width / 2 - image.get_width() / 2
+        top = self.frame.screen_height / 2 - image.get_height() / 2
+        self.frame.screen.blit(image, (left, top))
 
     def add_inputs(self):
         # if not self.input_rendered:
@@ -116,7 +113,7 @@ class Game:
             if len(self.input_boxes) == 1:
                 self.players[1] = "Bot - Normal"
             if not is_empty:
-                self.show_board = True
+                self.display = "board"
                 self.first_move = self.players[0]
 
     def board_screen(self):
@@ -191,16 +188,16 @@ class Game:
                 self.is_btn_clicked = True
             for box in self.input_boxes:
                 box.handle_event(event)
-        if self.show_board and not self.two_players:
+        if self.display == "board" and not self.two_players:
             if self.is_btn_clicked and self.difficulty_toggle.collidepoint(pygame.mouse.get_pos()):
-                if self.bot_difficulty == self.dificulty_levels.get("normal"):
-                    self.bot_difficulty = self.dificulty_levels.get("hard")
+                if self.bot_difficulty == self.dificulty_levels.get("Normal"):
+                    self.bot_difficulty = self.dificulty_levels.get("Hard")
                     self.players[1] = "Bot - Hard"
-                elif self.bot_difficulty == self.dificulty_levels.get("hard"):
-                    self.bot_difficulty = self.dificulty_levels.get("impossible")
-                    self.players[1] = "Bot - Impossible"
-                elif self.bot_difficulty == self.dificulty_levels.get("impossible"):
-                    self.bot_difficulty = self.dificulty_levels.get("normal")
+                elif self.bot_difficulty == self.dificulty_levels.get("Hard"):
+                    self.bot_difficulty = self.dificulty_levels.get("Expert")
+                    self.players[1] = "Bot - Expert"
+                elif self.bot_difficulty == self.dificulty_levels.get("Expert"):
+                    self.bot_difficulty = self.dificulty_levels.get("Normal")
                     self.players[1] = "Bot - Normal"
                 self.board.grid = [self.board.blank] * 9
                 self.scores = [0, 0]
@@ -213,26 +210,34 @@ class Game:
             self.board.grid = [self.board.blank] * 9
             self.scores = [0, 0]
             self.player = Player.X
-            self.show_board = False
+            self.display = "name"
             self.add_inputs()
 
         if self.two_players:
             self.button_toggle = self.frame.create_button(1, "src/assets/svg/users.svg")
         else:
             self.button_toggle = self.frame.create_button(1, "src/assets/svg/user.svg")
-        if self.show_board:
-            self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+        if self.display == "board":
             if not self.two_players:
                 key_list = list(self.dificulty_levels.keys())
                 val_list = list(self.dificulty_levels.values())
                 position = val_list.index(self.bot_difficulty)
                 self.difficulty_toggle = self.frame.create_button(idx=3, url=f"src/assets/svg/{key_list[position]}.svg")
+        self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+        if self.is_btn_clicked and self.chart_toggle.collidepoint(pygame.mouse.get_pos()):
+            if not self.display == "graph":
+                self.display = "graph"
+            else:
+                if self.players[0] != "":
+                    self.display = "board"
+                else:
+                    self.display = "name"
 
     def update_csv(self):
         player_two = self.players[1] if "-" not in self.players[1] else "Bot"
         winner = self.winner if "-" not in self.winner else "Bot"
-        winner = winner if self.outcome == 'win' else '-'
-        row = f"{self.players[0]},{player_two},{self.first_move},{self.outcome},{winner}"
+        winner = winner if self.outcome == 'win' else ''
+        row = f"{self.players[0]},{player_two},{self.winner},{self.outcome},{self.first_move}"
         key_list = list(self.dificulty_levels.keys())
         val_list = list(self.dificulty_levels.values())
         position = val_list.index(self.bot_difficulty)
@@ -240,9 +245,14 @@ class Game:
         if not self.two_players:
             row += f",{difficulty}\n"
         else:
-            row += ",-\n"
+            row += ",\n"
         with open('src/assets/dataset.csv','a') as fd:
+            print("Opened")
             fd.write(row)
+            print("Written")
+            fd.close()
+            self.figure.save_figure()
+            print("Saved")
 
     def game_result(self, board: list[int]):
         def check_horizontal(player: int):
