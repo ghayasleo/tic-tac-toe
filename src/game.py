@@ -1,5 +1,7 @@
 import math
 import pygame
+import matplotlib.pyplot as plt
+import matplotlib.backends.backend_agg as agg
 from pygame.locals import *
 
 from src.frame import Frame
@@ -57,6 +59,21 @@ class Game:
             pygame.display.update()
             self.clock.tick(100)
         return
+
+    def show_graph(self):
+        # Create a matplotlib figure
+        fig, ax = plt.subplots()
+        # Plot some data
+        ax.plot([1, 2, 3, 4], [1, 4, 9, 16])
+        # Create a figure canvas
+        canvas = agg.FigureCanvasAgg(fig)
+        # Draw the canvas onto a pygame surface
+        renderer = canvas.get_renderer()
+        raw_data = renderer.tostring_rgb()
+        size = canvas.get_width_height()
+        surf = pygame.image.fromstring(raw_data, size, "RGB")
+        # Draw the surface onto the pygame screen
+        self.frame.screen.blit(surf, (0, 0))
 
     def add_inputs(self):
         # if not self.input_rendered:
