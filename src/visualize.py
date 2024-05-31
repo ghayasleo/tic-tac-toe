@@ -14,7 +14,6 @@ class Figure:
     # Count wins for each player from first move and second move
     wins_first_move = self.df[self.df["winner_was_first_mover"] == 1]["winner"].value_counts()
     wins_second_move = self.df[self.df["winner_was_first_mover"] == 0]["winner"].value_counts()
-
     # Create a new DataFrame with the counts
     df_wins = pd.DataFrame({"First Move": wins_first_move, "Second Move": wins_second_move})
 
@@ -44,3 +43,8 @@ class Figure:
     # Save the figure
     plt.savefig(self.img)
     # plt.show()
+  
+# dataset = "src/assets/dataset.csv"
+# img_url = "./src/assets/img/plot.png"
+# figure = Figure(dataset, img_url)
+# figure.save_figure()

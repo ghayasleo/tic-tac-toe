@@ -237,7 +237,7 @@ class Game:
         player_two = self.players[1] if "-" not in self.players[1] else "Bot"
         winner = self.winner if "-" not in self.winner else "Bot"
         winner = winner if self.outcome == 'win' else ''
-        row = f"{self.players[0]},{player_two},{self.winner},{self.outcome},{self.first_move}"
+        row = f"{self.players[0]},{player_two},{winner},{self.outcome},{self.first_move}"
         key_list = list(self.dificulty_levels.keys())
         val_list = list(self.dificulty_levels.values())
         position = val_list.index(self.bot_difficulty)
@@ -247,12 +247,9 @@ class Game:
         else:
             row += ",\n"
         with open('src/assets/dataset.csv','a') as fd:
-            print("Opened")
             fd.write(row)
-            print("Written")
             fd.close()
             self.figure.save_figure()
-            print("Saved")
 
     def game_result(self, board: list[int]):
         def check_horizontal(player: int):
