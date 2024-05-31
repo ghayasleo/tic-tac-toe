@@ -3,8 +3,11 @@ Rio,Ghayas,Rio,win,Rio,
 Rio,Ghayas,Ghayas,win,Ghayas,
 Rio,Ghayas,Rio,win,Rio,
 Ghayas,Afshan,Ghayas,win,Ghayas,
-Ghayas,Afshan,Ghayas,win,Ghayas,
+Ghayas,Afshan,Ghayas,win,Afshan,
+Ghayas,Afshan,Ghayas,win,Afshan,
+Ghayas,Rio,Ghayas,win,Rio,
 Ghayas,Afshan,Afshan,win,Afshan,
+Ghayas,Afshan,Afshan,win,Ghayas,
 Ghayas,Bot,Bot,win,Ghayas,Expert
 Afshan,Bot,Afshan,win,Afshan,Normal
 Afshan,Bot,Afshan,win,Afshan,Normal
@@ -13,4 +16,3 @@ Ghayas,Bot,Bot,win,Ghayas,Expert
 Ghayas,Bot,,draw,Ghayas,Expert
 Ghayas,Bot,Bot,win,Ghayas,Expert
 Ghayas,Bot,Ghayas,win,Ghayas,Normal
-A,Bot,Bot,win,A,Expert

@@ -35,7 +35,7 @@ class Figure:
     # Set the y-axis limits and ticks
     plt.ylim(0, int(np.ceil(df_wins.max().max())))
     plt.yticks(range(0, int(np.ceil(df_wins.max().max()) + 2), 1), color="white")
-    plt.subplots_adjust(bottom=0.3)
+    plt.subplots_adjust(bottom=0.2)
 
     # Set the grid
     # plt.grid(True, linestyle=":", color="#555555")
@@ -43,8 +43,8 @@ class Figure:
     # Save the figure
     plt.savefig(self.img)
     # plt.show()
-  
-# dataset = "src/assets/dataset.csv"
-# img_url = "./src/assets/img/plot.png"
-# figure = Figure(dataset, img_url)
-# figure.save_figure()
+
+dataset = "src/assets/dataset.csv"
+img_url = "./src/assets/img/plot.png"
+figure = Figure(dataset, img_url)
+figure.save_figure()
