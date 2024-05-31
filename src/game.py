@@ -28,12 +28,13 @@ class Game:
         self.game_over = False
         self.scores = [0, 0]
         self.dificulty_levels = {
-            "Normal": 4,
+            "Normal": 5,
             "Hard": 6,
             "Expert": 7,
         }
         self.bot_difficulty = self.dificulty_levels.get("Normal")
         self.delay = None
+        self.delay_bot_move = None
         self.is_btn_clicked = False
         self.display = "name"
         self.show_stats = False
