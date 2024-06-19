@@ -1,50 +1,80 @@
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.pylab as pylab
 
 class Figure:
   def __init__(self, csv_url: str, img_url: str) -> None:
     self.csv = csv_url
     self.img = img_url
+    self.palette = "rocket"
 
-  def save_figure(self):
+  def create_figure(self):
     self.df = pd.read_csv(self.csv)
-    self.df["winner_was_first_mover"] = (self.df["winner"] == self.df["first_move"]).astype(int)
 
-    # Count wins for each player from first move and second move
-    wins_first_move = self.df[self.df["winner_was_first_mover"] == 1]["winner"].value_counts()
-    wins_second_move = self.df[self.df["winner_was_first_mover"] == 0]["winner"].value_counts()
-    # Create a new DataFrame with the counts
-    df_wins = pd.DataFrame({"First Move": wins_first_move, "Second Move": wins_second_move})
+    # plt.figure(figsize=(10, 8))
 
-    # Create a new matplotlib style sheet with a dark theme
+    # plt.subplot(2, 2, 1)
+    # self.bar_chart()
+
+    # plt.subplot(2, 2, 2)
+    # self.pie_chart()
+
+    # plt.subplot(2, 2, (3, 4))
+    # self.heatmap()
+
+    # Adjust layout for better spacing
+    # plt.tight_layout()
+    # self.show_fig()
+
+    self.bar_chart("./src/assets/img/wins.png")
+    self.pie_chart("./src/assets/img/first-move.png")
+    self.heatmap("./src/assets/img/head-to-head.png")
+
+  # 1. Bar chart of wins by each player
+  def bar_chart(self, img = ""):
     plt.style.use("dark_background")
+    plt.figure(figsize=(8, 5))
+    win_counts = self.df['winner'].value_counts()
+    sns.barplot(x=win_counts.index, y=win_counts.values, palette=self.palette, hue=win_counts.index)
+    plt.title('Number of Wins by Each Player')
+    plt.xlabel('Player')
+    plt.ylabel('Number of Wins')
+    # plt.tight_layout()
+    self.save_fig(img)
+    # self.show_fig()
 
-    # Set the size of the figure
-    plt.rcParams["figure.figsize"] = (8, 5)
-    df_wins.plot(kind="bar")
+  # 2. Pie chart of first moves distribution
+  def pie_chart(self, img = ""):
+    plt.style.use("dark_background")
+    plt.figure(figsize=(8, 5))
+    first_move_counts = self.df['first_move'].value_counts()
+    plt.pie(first_move_counts, labels=first_move_counts.index, autopct='%1.1f%%', colors=sns.color_palette(self.palette, len(first_move_counts)))
+    plt.title('Distribution of First Moves')
+    # plt.tight_layout()
+    self.save_fig(img)
+    # self.show_fig()
 
-    # Set the title and labels
-    plt.title("Wins for each player from first and second move", color="white")
-    plt.xlabel("Player", color="white")
-    plt.ylabel("Wins", color="white")
+  # 3. Heatmap of head-to-head wins
+  def heatmap(self, img = ""):
+    plt.style.use("dark_background")
+    plt.figure(figsize=(8, 5))
+    head_to_head = pd.crosstab(self.df['first_move'], self.df['second_move'], values=self.df['winner'] == self.df['first_move'], aggfunc='sum', normalize='index')
+    sns.heatmap(head_to_head, annot=True, cmap=self.palette, cbar_kws={'label': 'Win Rate'})
+    plt.title('Head-to-Head Win Rates')
+    plt.xlabel('Player Two')
+    plt.ylabel('Player One')
+    # plt.tight_layout()
+    self.save_fig(img)
+    # self.show_fig()
 
-    # Set the legend
-    plt.legend(loc="upper left", facecolor="#333333")
+  def save_fig(self, img):
+    plt.savefig(img)
 
-    # Set the y-axis limits and ticks
-    plt.ylim(0, int(np.ceil(df_wins.max().max())))
-    plt.yticks(range(0, int(np.ceil(df_wins.max().max()) + 2), 1), color="white")
-    plt.subplots_adjust(bottom=0.2)
-
-    # Set the grid
-    # plt.grid(True, linestyle=":", color="#555555")
-
-    # Save the figure
-    plt.savefig(self.img)
-    # plt.show()
+  def show_fig(self):
+    plt.show()
 
 dataset = "src/assets/dataset.csv"
 img_url = "./src/assets/img/plot.png"
 figure = Figure(dataset, img_url)
-figure.save_figure()
+figure.create_figure()

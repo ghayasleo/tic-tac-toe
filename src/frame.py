@@ -8,7 +8,7 @@ from src.player import Player
 
 class Frame:
     screen_width = 1280
-    screen_height = 720
+    screen_height = 800
     title = "Triad Clash"
 
     def __init__(self) -> None:
@@ -108,7 +108,7 @@ class Frame:
                     return (x, y)
         return None
 
-    def create_button(self, idx: int, url: str, left=None, top=None):
+    def create_icon_btn(self, idx: int, url: str, left=None, top=None):
         size = 40
         if not left:
             left = size * idx + abs((idx - 1) * 20)
@@ -116,12 +116,39 @@ class Frame:
             top = self.screen_height - 40 - size
         rect = pygame.Rect(left, top, size, size)
         box = pygame.draw.rect(self.screen, Color.hover, rect, border_radius=5)
-        pygame.draw.rect(self.screen, Color.btn_border,
-                         rect, 1, border_radius=5)
+        pygame.draw.rect(self.screen, Color.btn_border, rect, 1, border_radius=5)
         icon = pygame.image.load(url)
         icon_rect = icon.get_rect()
         icon_rect.center = left + size / 2, top + size / 2
         self.screen.blit(icon, icon_rect)
+        return box
+
+    def create_button(self, text: str, idx: int, color=Color.white, left=None, top=None):
+        font = Font.xsmall
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+
+        # print(text, left)
+        height = 40
+        width = text_rect.width + (18 * 2)
+        if not left:
+            left = self.screen_width - width - 20
+        else:
+            left = left - width - 20
+        if not top:
+            top = self.screen_height - 40 - height
+
+        # print(text, left)
+
+        rect = pygame.Rect(left, top, width, height)
+        box = pygame.draw.rect(self.screen, Color.hover, rect, border_radius=5)
+        pygame.draw.rect(self.screen, Color.btn_border, rect, 1, border_radius=5)
+
+        # print(box.width)
+        # print("-----------------")
+
+        text_rect.center = left + width / 2, top + height / 2
+        self.screen.blit(text_surface, text_rect)
         return box
 
     def trigger_click(self, box: pygame.Rect, is_clicked: bool, two_players: bool):

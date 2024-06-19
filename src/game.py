@@ -9,6 +9,7 @@ from src.board import Board
 from src.sound import Sound
 from src.input import Input
 from src.color import Color
+from src.button import Button
 from src.visualize import Figure
 
 
@@ -40,9 +41,13 @@ class Game:
         self.show_stats = False
         txt = self.player.turns
         # self.frame.draw_board(self.board.grid, txt, self.scores, self.players)
-        self.button_toggle = self.frame.create_button(idx=1, url="src/assets/svg/user.svg")
-        self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
-        self.difficulty_toggle = self.frame.create_button(idx=3, url="src/assets/svg/Normal.svg")
+        self.button_toggle = self.frame.create_icon_btn(idx=1, url="src/assets/svg/user.svg")
+        self.chart_toggle = self.frame.create_icon_btn(idx=2, url="src/assets/svg/chart.svg")
+        self.difficulty_toggle = self.frame.create_icon_btn(idx=3, url="src/assets/svg/Normal.svg")
+        self.btn1 = self.frame.create_button("Head To Head", 1)
+        self.btn2 = self.frame.create_button("First Moves", 2, left=self.btn1.left)
+        self.btn3 = self.frame.create_button("Wins", 3, left=self.btn2.left)
+        self.graph = "wins"
         self.dataset = "src/assets/dataset.csv"
         self.img_url = "./src/assets/img/plot.png"
         self.figure = Figure(self.dataset, self.img_url)
@@ -68,10 +73,18 @@ class Game:
 
     def graph_screen(self):
         self.frame.screen.fill(Color.bg)
-        image = pygame.image.load(self.img_url)
+        img = self.img_url.replace("plot", self.graph)
+        image = pygame.image.load(img)
         left = self.frame.screen_width / 2 - image.get_width() / 2
         top = self.frame.screen_height / 2 - image.get_height() / 2
         self.frame.screen.blit(image, (left, top))
+
+        if self.is_btn_clicked and self.btn1.collidepoint(pygame.mouse.get_pos()):
+            self.graph = "head-to-head"
+        if self.is_btn_clicked and self.btn2.collidepoint(pygame.mouse.get_pos()):
+            self.graph = "first-move"
+        if self.is_btn_clicked and self.btn3.collidepoint(pygame.mouse.get_pos()):
+            self.graph = "wins"
 
     def add_inputs(self):
         # if not self.input_rendered:
@@ -81,7 +94,7 @@ class Game:
         left_two = (self.frame.screen_width / 2) + 10
         top = (self.frame.screen_height / 2) - (input_height / 2)
         btn_left = (self.frame.screen_width / 2) - (40 / 2)
-        self.login = self.frame.create_button(idx=2, url="src/assets/svg/login.svg",top=top + input_height + 10, left=btn_left)
+        self.login = self.frame.create_icon_btn(idx=2, url="src/assets/svg/login.svg",top=top + input_height + 10, left=btn_left)
 
         if self.two_players:
             self.input_one = Input(left_one, top, input_width, input_height, placeholder="Player one")
@@ -103,7 +116,7 @@ class Game:
         btn_left = (self.frame.screen_width / 2) - (40 / 2)
         input_height = self.input_boxes[0].rect.height
         top = (self.frame.screen_height / 2) - (input_height / 2)
-        self.login = self.frame.create_button(idx=2, url="src/assets/svg/login.svg",top=top + input_height + 20, left=btn_left)
+        self.login = self.frame.create_icon_btn(idx=2, url="src/assets/svg/login.svg",top=top + input_height + 20, left=btn_left)
         if self.is_btn_clicked and self.login.collidepoint(pygame.mouse.get_pos()):
             is_empty = False
             for idx, input in enumerate(self.input_boxes):
@@ -116,6 +129,7 @@ class Game:
             if not is_empty:
                 self.display = "board"
                 self.first_move = self.players[0]
+                self.second_move = self.players[1]
 
     def board_screen(self):
         if self.coords and self.board.is_legal_move(self.coords, self.board.grid) and not self.game_over:
@@ -159,6 +173,7 @@ class Game:
                     self.player = self.player.X
                 self.update_csv()
                 if self.two_players:
+                    self.second_move = self.players[self.player.value - 1]
                     self.player = self.player.other
                 self.first_move = self.players[self.player.value - 1]
                 self.delay = self.current_time + 1000
@@ -215,16 +230,16 @@ class Game:
             self.add_inputs()
 
         if self.two_players:
-            self.button_toggle = self.frame.create_button(1, "src/assets/svg/users.svg")
+            self.button_toggle = self.frame.create_icon_btn(1, "src/assets/svg/users.svg")
         else:
-            self.button_toggle = self.frame.create_button(1, "src/assets/svg/user.svg")
+            self.button_toggle = self.frame.create_icon_btn(1, "src/assets/svg/user.svg")
         if self.display == "board":
             if not self.two_players:
                 key_list = list(self.dificulty_levels.keys())
                 val_list = list(self.dificulty_levels.values())
                 position = val_list.index(self.bot_difficulty)
-                self.difficulty_toggle = self.frame.create_button(idx=3, url=f"src/assets/svg/{key_list[position]}.svg")
-        self.chart_toggle = self.frame.create_button(idx=2, url="src/assets/svg/chart.svg")
+                self.difficulty_toggle = self.frame.create_icon_btn(idx=3, url=f"src/assets/svg/{key_list[position]}.svg")
+        self.chart_toggle = self.frame.create_icon_btn(idx=2, url="src/assets/svg/chart.svg")
         if self.is_btn_clicked and self.chart_toggle.collidepoint(pygame.mouse.get_pos()):
             if not self.display == "graph":
                 self.display = "graph"
@@ -233,8 +248,13 @@ class Game:
                     self.display = "board"
                 else:
                     self.display = "name"
+        if self.display == "graph":
+            self.btn1 = self.frame.create_button("Head To Head", 1)
+            self.btn2 = self.frame.create_button("First Moves", 2, left=self.btn1.left)
+            self.btn3 = self.frame.create_button("Wins", 3, left=self.btn2.left)
 
     def update_csv(self):
+        # print(self.first_move, self.second_move)
         player_two = self.players[1] if "-" not in self.players[1] else "Bot"
         winner = self.winner if "-" not in self.winner else "Bot"
         winner = winner if self.outcome == 'win' else ''
@@ -250,7 +270,7 @@ class Game:
         with open('src/assets/dataset.csv','a') as fd:
             fd.write(row)
             fd.close()
-            self.figure.save_figure()
+            self.figure.create_figure()
 
     def game_result(self, board: list[int]):
         def check_horizontal(player: int):

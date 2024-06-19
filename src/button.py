@@ -1,17 +1,33 @@
 import pygame
 
-from src.frame import Frame
-
+from src.font import Font
 
 class Button:
-    def __init__(self, idx: int, url: str) -> None:
-        size = 40
-        left = size * idx + abs((idx - 1) * 20)
-        top = Frame.screen_height - 40 - size
-        rect = pygame.Rect(left, top, size, size)
-        box = pygame.draw.rect(SCREEN, CLR_HOVER, rect, border_radius=5)
-        pygame.draw.rect(SCREEN, CLR_BTN_BORDER, rect, 1, border_radius=5)
-        icon = pygame.image.load(url)
-        icon_rect = icon.get_rect()
-        icon_rect.center = left + size / 2, top + size / 2
-        SCREEN.blit(icon, icon_rect)
+    def __init__(self, screen, x, y, height, width, colour, border, curve, text, textColour):
+        self.screen = screen
+        self.x = x
+        self.y = y
+        self.height = height
+        self.width = width
+        self.colour = colour
+        self.border = border
+        self.curve = curve
+        self.text = text
+        self.textColour = textColour
+
+    def drawRect(self):
+        button = pygame.Rect(self.x, self.y, self.width, self.height)
+        pygame.draw.rect(self.screen, self.colour, button, self.border, self.curve)
+        if self.text != "":
+            self.drawText()
+
+        if button.collidepoint(pygame.mouse.get_pos()):
+            return True
+
+        return False
+
+    def drawText(self):
+        font = Font.xsmall
+        text_surf = font.render(self.text, True, self.textColour)
+        text_rect = text_surf.get_rect(center=(self.x+self.width//2, self.y+self.height//2))
+        self.screen.blit(text_surf, text_rect)
