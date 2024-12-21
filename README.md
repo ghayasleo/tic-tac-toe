@@ -44,7 +44,13 @@ Use the command below to activate the environment
 
 Use the command given below to install dependencies
 
-    pip install -r requirements.txt
+1. **Macbook**
+
+        pip3 install -r requirements.txt
+
+2. **Windows**
+
+        pip install -r requirements.txt
 
 ### Running the code
 

@@ -1,10 +1,7 @@
 .idea
 env
 src/__pycache__
-src/matches.pickle
 build
 dist
 trash
-game.exe
 index.spec
-index.exe
